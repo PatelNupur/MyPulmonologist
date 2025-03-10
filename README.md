@@ -21,7 +21,6 @@
   </p>
 </p>
 
-![Contributors](https://img.shields.io/github/contributors/ghadiyaaysh17601/MyPulmonologist?color=dark-green) ![Forks](https://img.shields.io/github/forks/ghadiyaaysh17601/MyPulmonologist?style=social) ![Issues](https://img.shields.io/github/issues/ghadiyaaysh17601/MyPulmonologist) 
 
 ## Table Of Contents
 
@@ -31,8 +30,7 @@
   * [Installation](#installation)
 * [Usage](#usage)
 * [Contributing](#contributing)
-* [License](#license)
-* [Authors](#authors)
+
 
 ## About The Project
 
@@ -78,14 +76,6 @@ To run this application in your local system do the following steps
 
 To use this application you need to take an X-ray/Ct scan image in JPEG/PNG/JPG format then insert it into our application you will get a result whether you have which diseases or you are normal.
 
-
-## Contributing
-
-Contributions are what make the open source community such an amazing place to be learn, inspire, and create. Any contributions you make are **greatly appreciated**.
-* If you have suggestions for adding or removing projects, feel free to [open an issue](https://github.com/ghadiyaaysh17601/MyPulmonologist/issues/new) to discuss it, or directly create a pull request after you edit the *README.md* file with necessary changes.
-* Please make sure you check your spelling and grammar.
-* Create individual PR for each suggestion.
-* Please also read through the [Code Of Conduct](https://github.com/ghadiyaaysh17601/MyPulmonologist/blob/main/CODE_OF_CONDUCT.md) before posting your first idea as well.
 
 ### Creating A Pull Request
 
