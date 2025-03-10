@@ -95,12 +95,5 @@ Contributions are what make the open source community such an amazing place to b
 4. Push to the Branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
 
-## License
-
-Distributed under the MIT License. See [LICENSE](https://github.com/ghadiyaaysh17601/MyPulmonologist/blob/main/LICENSE.md) for more information.
-
-## Authors
-
-* **Ayush Ghadiya** - *IT studeny* - [Ayush Ghadiya](https://github.com/ghadiyaaysh17601) 
 
 
