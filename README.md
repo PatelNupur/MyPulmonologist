@@ -1,23 +1,23 @@
 <br/>
 <p align="center">
-  <a href="https://github.com/ghadiyaaysh17601/MyPulmonologist">
+  <a href="https://github.com/PatelNupur/MyPulmonologist">
     
   </a>
 
   <h3 align="center">My Pulmonologist</h3>
 
   <p align="center">
-    Providing Fast , Accurate Lungs Diseases Detection System with Deep Neural Networ
+    Providing Fast , Accurate Lungs Diseases Detection System with Deep Neural Networks
     <br/>
     <br/>
-    <a href="https://github.com/ghadiyaaysh17601/MyPulmonologist"><strong>Explore the docs »</strong></a>
+    <a href="https://github.com/PatelNupur/MyPulmonologist"><strong>Explore the docs »</strong></a>
     <br/>
     <br/>
     <a href="http://mypulmonologist.herokuapp.com">View Demo</a>
     .
-    <a href="https://github.com/ghadiyaaysh17601/MyPulmonologist/issues">Report Bug</a>
+    <a href="https://github.com/PatelNupur/MyPulmonologist/issues">Report Bug</a>
     .
-    <a href="https://github.com/ghadiyaaysh17601/MyPulmonologist/issues">Request Feature</a>
+    <a href="https://github.com/PatelNupur/MyPulmonologist/issues">Request Feature</a>
   </p>
 </p>
 
