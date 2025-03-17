@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Dashboard page</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.4/dist/jquery.slim.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+</head>
+<body>
+
+<div class="container">
+    <div class=" row justify-content-center">
+        <div class="col-sm-8">
+            <h2>Welcome, {{ user.name }}!</h2>
+            <h3>Your Past Predictions:</h3>
+
+            <div class="row">
+                {% if predictions %}
+                    {% for prediction in predictions %}
+                    <div class="col-md-4">
+                        <div class="card mb-4">
+                            <img src="{{ url_for('static', filename='uploads/' + prediction.image_path.split('/')[-1]) }}" class="card-img-top" alt="X-ray Image">
+
+                            <div class="card-body">
+                                
+                                <h5 class="card-title">Prediction: <strong>{{ prediction.result }}</strong></h5>
+                                <p class="card-text">Date: {{ prediction.timestamp.strftime('%Y-%m-%d %H:%M') }}</p>
+                                <!-- Delete Button -->
+                                <form action="{{ url_for('delete_prediction', prediction_id=prediction.id) }}" method="POST">
+                                    <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-center">No predictions found. Upload an image to get started.</p>
+                {% endif %}
+            </div>
+        
+            <div class="text-center">
+               
+                
+                
+                <a href="{{ url_for('predictnow') }}" class="btn btn-primary">Make a Prediction</a>
+                <a href="{{ url_for('logout') }}" class="btn btn-danger">Logout</a>
+            </div>
+        </div>
+</div>
+</body>
+</html>
