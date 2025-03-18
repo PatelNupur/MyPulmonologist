@@ -28,6 +28,10 @@ from flask_sqlalchemy import SQLAlchemy
 import bcrypt
 from datetime import datetime
 import pytz
+from fpdf import FPDF
+from flask import send_file
+from flask_mail import Mail, Message
+
 #from gevent.pywsgi import WSGIServer
 
 # Define a flask app
@@ -37,6 +41,19 @@ db = SQLAlchemy(app)
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'  # Redirects unauthorized users to login page
 app.secret_key = 'secret_key'  # Required for session security
+
+
+# Configure Flask-Mail
+app.config['MAIL_SERVER'] = 'smtp.gmail.com'  # Use Gmail's SMTP
+app.config['MAIL_PORT'] = 587
+app.config['MAIL_USE_TLS'] = True
+app.config['MAIL_USE_SSL'] = False 
+app.config['MAIL_USERNAME'] = 'nupurpatel1301@gmail.com'  # Replace with your email
+app.config['MAIL_PASSWORD'] = 'wjqi rnck egye pirh'  # Use App Password, not your actual password
+app.config['MAIL_DEFAULT_SENDER'] = 'nupurpatel1301@gmail.com'
+
+mail = Mail(app)  # Initialize Flask-Mail
+
 
 # Model saved with Keras model.save()
 MODEL_PATH ='multilungs_mobilenet_E40_ACC97_val85.h5'
@@ -113,6 +130,8 @@ def login():
         else:
             flash('Invalid email or password.', 'danger')
 
+            
+
     return render_template('login.html')
 
 
@@ -184,14 +203,13 @@ def index():
     return render_template('index.html')
 
 @app.route('/predictnow', methods=['GET'])
-@login_required  # Ensure that the user is logged in to access the predictnow page
+ # Ensure that the user is logged in to access the predictnow page
 def predictnow():
     # Main page
     return render_template('predict.html')
 
 
 @app.route('/predict', methods=['GET', 'POST'])
-@login_required  # Ensure the user is logged in to make predictions
 def upload():
     if request.method == 'POST':
         # Get the file from post request
@@ -212,12 +230,15 @@ def upload():
         preds = model_predict(file_path, model)
         result=preds
         # Save prediction result to database
-        new_prediction = Prediction(user_id=current_user.id, image_path=file_path, result=result)
-        db.session.add(new_prediction)
-        db.session.commit()
+        if current_user.is_authenticated:
+            new_prediction = Prediction(user_id=current_user.id, image_path=file_path, result=result)
+            db.session.add(new_prediction)
+            db.session.commit()
 
-        flash('Prediction saved successfully!', 'success')
+        # flash('Prediction saved successfully!', 'success')
         return result
+    
+    return render_template("predict.html")
     
         
         # return redirect('/dashboard')
@@ -243,6 +264,85 @@ def delete_prediction(prediction_id):
 
     flash('Prediction deleted successfully!', 'success')
     return redirect(url_for('dashboard'))
+
+@app.route('/download_image/<int:prediction_id>')
+@login_required
+def download_image(prediction_id):
+    prediction = Prediction.query.get_or_404(prediction_id)
+    image_path = os.path.join("static", "uploads", os.path.basename(prediction.image_path))
+    
+    return send_file(image_path, as_attachment=True)
+
+
+@app.route('/download_pdf/<int:prediction_id>')
+@login_required
+def download_pdf(prediction_id):
+    prediction = Prediction.query.get_or_404(prediction_id)
+
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Arial", size=16)
+    
+    # Add title
+    pdf.cell(200, 10, "Lung Disease Prediction Report", ln=True, align='C')
+    pdf.ln(10)
+    
+    # Add prediction details
+    pdf.set_font("Arial", size=12)
+    pdf.cell(200, 10, f"Prediction: {prediction.result}", ln=True)
+    pdf.cell(200, 10, f"Date: {prediction.timestamp.strftime('%Y-%m-%d %H:%M')}", ln=True)
+    pdf.ln(10)
+
+    # Add image
+    image_path = prediction.image_path  # Ensure correct path
+    if os.path.exists(image_path):
+        pdf.image(image_path, x=10, y=pdf.get_y(), w=100)  # Adjust position and size
+        pdf.ln(60)  # Space after image
+    
+    
+    # Save PDF
+    pdf_path = f"static/reports/prediction_{prediction.id}.pdf"
+    pdf.output(pdf_path)
+
+    return send_file(pdf_path, as_attachment=True)
+
+@app.route('/send_email', methods=['POST'])
+@login_required
+def send_email():
+    recipient = request.form['email']
+    prediction_id = request.form['prediction_id']
+
+    prediction = Prediction.query.get_or_404(prediction_id)
+    timestamp = prediction.timestamp.strftime('%Y-%m-%d %H:%M')
+
+    subject = "Your Lung Disease Prediction Report"
+    body = f"Hello,\n\nHere is your lung disease prediction result.\n\nPrediction: {prediction.result}\nDate: {timestamp}\n\nPlease find the attached report and image."
+
+    msg = Message(subject, recipients=[recipient], body=body)
+
+    # Attach PDF report
+    pdf_path = f"static/reports/prediction_{prediction.id}.pdf"
+    if os.path.exists(pdf_path):
+        with open(pdf_path, 'rb') as pdf:
+            msg.attach(f"prediction_{prediction.id}.pdf", "application/pdf", pdf.read())
+
+    # Attach Image
+    image_path = prediction.image_path
+    if os.path.exists(image_path):
+        with open(image_path, 'rb') as img:
+            msg.attach(os.path.basename(image_path), "image/jpeg", img.read())
+
+    try:
+        mail.send(msg)
+        flash('Email sent successfully!', 'success')
+        print(f"✅ Email sent successfully to {recipient}")
+    except Exception as e:
+        flash(f'Error sending email: {str(e)}', 'danger')
+        print(f"❌ Error sending email: {str(e)}")
+
+    return redirect(url_for('dashboard'))
+
+
 
 
 if __name__ == '__main__':

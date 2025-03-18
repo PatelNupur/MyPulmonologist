@@ -81,6 +81,15 @@
     <!-- End File Details -->
   </div>
   <!-- End Upload Area -->
+  <div class="text-center mt-4">
+    <a href="{{ url_for('predictnow') }}" class="btn btn-outline-secondary btn-lg mx-2" style="font-size: 16px;">Predict Again</a>
+
+    {% if current_user.is_authenticated %}
+        <a href="{{ url_for('dashboard') }}" class="btn btn-outline-success btn-lg mx-2" style="font-size: 16px;">Go to Dashboard</a>
+    {% else %}
+        <a href="{{ url_for('login') }}" class="btn btn-outline-secondary btn-lg mx-2" style="font-size: 16px;">Login to Save Predictions</a>
+    {% endif %}
+</div>
 
   
 

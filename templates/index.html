@@ -17,9 +17,13 @@
     <div class="container-fluid">
       <a class="navbar-brand">My Pulmonologist: Multi-Lungs Diseases Detection System</a>
       <div class="d-flex">
-      
-        <a href="/register"><button type="button" class="btn btn-outline-success mx-2">Register</button></a>
-        <a href="/login"><button type="button" class="btn btn-outline-success mx-2">Login</button></a>
+        {% if current_user.is_authenticated %}
+          <a href="{{ url_for('dashboard') }}"><button type="button" class="btn btn-outline-success mx-2">Dashboard</button></a>
+          <a href="{{ url_for('logout') }}"><button type="button" class="btn btn-outline-danger mx-2">Logout</button></a>
+        {% else %}
+          <a href="{{ url_for('register') }}"><button type="button" class="btn btn-outline-success mx-2">Register</button></a>
+          <a href="{{ url_for('login') }}"><button type="button" class="btn btn-outline-success mx-2">Login</button></a>
+        {% endif %}
       </div>
     </div>
   </nav>

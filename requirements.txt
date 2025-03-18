@@ -7,3 +7,5 @@ gunicorn
 bcrypt  
 flask-login
 flask_sqlalchemy
+pytz
+fpdf
