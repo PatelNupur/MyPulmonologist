@@ -269,6 +269,13 @@ def delete_prediction(prediction_id):
 @login_required
 def download_image(prediction_id):
     prediction = Prediction.query.get_or_404(prediction_id)
+
+    # Convert timestamp to Eastern Time (Ohio)
+    eastern_tz = pytz.timezone('America/New_York')
+    if prediction.timestamp:
+        prediction.timestamp = prediction.timestamp.replace(tzinfo=pytz.utc).astimezone(eastern_tz)
+
+
     image_path = os.path.join("static", "uploads", os.path.basename(prediction.image_path))
     
     return send_file(image_path, as_attachment=True)
@@ -278,6 +285,11 @@ def download_image(prediction_id):
 @login_required
 def download_pdf(prediction_id):
     prediction = Prediction.query.get_or_404(prediction_id)
+
+    # Convert timestamp to Eastern Time (Ohio)
+    eastern_tz = pytz.timezone('America/New_York')
+    if prediction.timestamp:
+        prediction.timestamp = prediction.timestamp.replace(tzinfo=pytz.utc).astimezone(eastern_tz)
 
     pdf = FPDF()
     pdf.add_page()
@@ -313,6 +325,13 @@ def send_email():
     prediction_id = request.form['prediction_id']
 
     prediction = Prediction.query.get_or_404(prediction_id)
+
+    # Convert timestamp to Eastern Time (Ohio)
+    eastern_tz = pytz.timezone('America/New_York')
+    if prediction.timestamp:
+        prediction.timestamp = prediction.timestamp.replace(tzinfo=pytz.utc).astimezone(eastern_tz)
+
+
     timestamp = prediction.timestamp.strftime('%Y-%m-%d %H:%M')
 
     subject = "Your Lung Disease Prediction Report"
