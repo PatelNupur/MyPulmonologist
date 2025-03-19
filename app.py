@@ -21,7 +21,7 @@ from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing import image
 
 # Flask utils
-from flask import Flask, redirect, url_for, request, render_template, flash, session
+from flask import Flask, redirect, url_for, request, render_template, flash, jsonify, session
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from werkzeug.utils import secure_filename
 from flask_sqlalchemy import SQLAlchemy
@@ -31,16 +31,23 @@ import pytz
 from fpdf import FPDF
 from flask import send_file
 from flask_mail import Mail, Message
+from yourapp import db
+from yourapp.models import Feedback
 
 #from gevent.pywsgi import WSGIServer
 
 # Define a flask app
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
+#feedback system
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///feedback.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'  # Redirects unauthorized users to login page
 app.secret_key = 'secret_key'  # Required for session security(flash msgs)
+
+
 
 
 # Configure Flask-Mail
@@ -67,6 +74,7 @@ class User(db.Model, UserMixin):
     email = db.Column(db.String(100), unique=True) # Email should be unique
     password = db.Column(db.String(100))
     predictions = db.relationship('Prediction', backref='user', lazy=True)
+    feedbacks = db.relationship('Feedback', back_populates='user')  # Link to feedbacks
 
     def __init__(self,email,password,name):
         self.name = name
@@ -84,8 +92,17 @@ class Prediction(db.Model):
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)  
 
 
+# Feedback Model
+class Feedback(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)  # Assuming you have a User model
+    feedback_text = db.Column(db.Text, nullable=False)
+    created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
+
+    user = db.relationship('User', back_populates='feedbacks')  # If you want to link it to User
+
 with app.app_context():
-    db.create_all()
+    db.create_all() # Creates all the tables defined in models.py
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -235,7 +252,7 @@ def upload():
             db.session.add(new_prediction)
             db.session.commit()
 
-        flash('Prediction saved successfully!', 'success')
+        # flash('Prediction saved successfully!', 'success')
         return result
     
     return render_template("predict.html")
@@ -260,7 +277,7 @@ def delete_prediction(prediction_id):
     db.session.delete(prediction)
     db.session.commit()
 
-    flash('Prediction deleted successfully!', 'success')
+    # flash('Prediction deleted successfully!', 'success')
     return redirect(url_for('dashboard'))
 
 @app.route('/download_image/<int:prediction_id>')
@@ -351,10 +368,10 @@ def send_email():
 
     try:
         mail.send(msg)
-        flash('Email sent successfully!', 'success')
+        # flash('Email sent successfully!', 'success')
         print(f" Email sent successfully to {recipient}")
     except Exception as e:
-        flash(f'Error sending email: {str(e)}', 'danger')
+        # flash(f'Error sending email: {str(e)}', 'danger')
         print(f" Error sending email: {str(e)}")
 
     return redirect(url_for('dashboard'))
@@ -398,6 +415,23 @@ def update_profile():
 
     return render_template('update_profile.html')
 
+@app.route('/submit_feedback', methods=['POST'])
+@login_required
+def submit_feedback():
+    feedback_text = request.form['feedback_text']
+
+    # Create new Feedback object and associate it with the logged-in user
+    feedback = Feedback(user_id=current_user.id, feedback_text=feedback_text)
+    
+    # Add the feedback to the database and commit
+    db.session.add(feedback)
+    db.session.commit()
+
+    flash('Feedback submitted successfully!', 'success')
+    return redirect(url_for('dashboard'))  # Redirect to any page after submission, like the dashboard
+
+
+    
 
 
 

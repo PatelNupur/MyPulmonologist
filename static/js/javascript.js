@@ -254,3 +254,90 @@ $('#btn-predict').click(function () {
       },
   });
 });
+
+
+// Show the feedback button after receiving a result
+$('#btn-predict').click(function () {
+    var form_data = new FormData($('#upload-file')[0]);
+
+    // Show loading animation
+    $(this).hide();
+    $('.loader').show();
+
+    // Make prediction by calling API /predict
+    $.ajax({
+        type: 'POST',
+        url: '/predict',
+        data: form_data,
+        contentType: false,
+        cache: false,
+        processData: false,
+        async: true,
+        success: function (data) {
+            $('.loader').hide();
+            $('#result').fadeIn(600);
+            $('#result').text('Result: ' + data);
+            console.log('Success!');
+
+            // Show the feedback button
+            $('#feedback-btn').show();
+        },
+    });
+});
+
+// Show feedback form when clicking the button
+$('#feedback-btn').click(function () {
+    $('#feedback-form').show();
+});
+
+// Submit feedback
+$('#submit-feedback').click(function () {
+    var feedbackText = $('#feedback-text').val();
+    var prediction = $('#result').text().replace('Result: ', '');
+
+    $.ajax({
+        type: 'POST',
+        url: '/submit_feedback',
+        data: JSON.stringify({ prediction: prediction, feedback: feedbackText }),
+        contentType: 'application/json',
+        success: function (response) {
+            alert(response.message);  // Show confirmation
+            $('#feedback-form').hide();  // Hide form after submission
+        }
+    });
+});
+
+
+$(document).ready(function() {
+  // Assuming the result is ready and you want to show the feedback button
+  $('#btn-predict').on('click', function() {
+      // Show the feedback button after prediction is done
+      $('#feedback-btn').show();
+  });
+
+  // When "Give Feedback" button is clicked, show the feedback form and overlay
+  $('#feedback-btn').on('click', function() {
+      $('#feedback-form').fadeIn();  // Fade-in the feedback form
+      $('#feedback-overlay').fadeIn();  // Fade-in the overlay
+  });
+
+  // When the overlay is clicked, hide the feedback form and overlay
+  $('#feedback-overlay').on('click', function() {
+      $('#feedback-form').fadeOut();  // Fade-out the feedback form
+      $('#feedback-overlay').fadeOut();  // Fade-out the overlay
+  });
+
+  // Handle feedback submission
+  $('#submit-feedback').on('click', function() {
+      var feedback = $('#feedback-text').val();
+      
+      // Handle feedback submission logic (like sending it to the server)
+      if(feedback) {
+          alert('Thank you for your feedback!');
+          $('#feedback-form').fadeOut();  // Hide the feedback form after submission
+          $('#feedback-overlay').fadeOut();  // Hide the overlay
+      } else {
+          alert('Please provide feedback before submitting.');
+      }
+  });
+});
