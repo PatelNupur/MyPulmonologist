@@ -21,7 +21,7 @@ from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing import image
 
 # Flask utils
-from flask import Flask, redirect, url_for, request, render_template, flash
+from flask import Flask, redirect, url_for, request, render_template, flash, session
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from werkzeug.utils import secure_filename
 from flask_sqlalchemy import SQLAlchemy
@@ -40,7 +40,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
 db = SQLAlchemy(app)
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'  # Redirects unauthorized users to login page
-app.secret_key = 'secret_key'  # Required for session security
+app.secret_key = 'secret_key'  # Required for session security(flash msgs)
 
 
 # Configure Flask-Mail
@@ -64,7 +64,7 @@ model = load_model(MODEL_PATH)
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
-    email = db.Column(db.String(100), unique=True)
+    email = db.Column(db.String(100), unique=True) # Email should be unique
     password = db.Column(db.String(100))
     predictions = db.relationship('Prediction', backref='user', lazy=True)
 
@@ -127,9 +127,9 @@ def login():
             login_user(user)  # Flask-Login handles session
             flash('Login successful!', 'success')
             return redirect(url_for('dashboard'))
-        else:
-            flash('Invalid email or password.', 'danger')
-
+        
+        flash('Invalid email or password.', 'danger')
+        return redirect(url_for('login'))
             
 
     return render_template('login.html')
@@ -235,13 +235,11 @@ def upload():
             db.session.add(new_prediction)
             db.session.commit()
 
-        # flash('Prediction saved successfully!', 'success')
+        flash('Prediction saved successfully!', 'success')
         return result
     
     return render_template("predict.html")
     
-        
-        # return redirect('/dashboard')
 
 @app.route('/delete_prediction/<int:prediction_id>', methods=['POST'])
 @login_required
@@ -354,12 +352,52 @@ def send_email():
     try:
         mail.send(msg)
         flash('Email sent successfully!', 'success')
-        print(f"✅ Email sent successfully to {recipient}")
+        print(f" Email sent successfully to {recipient}")
     except Exception as e:
         flash(f'Error sending email: {str(e)}', 'danger')
-        print(f"❌ Error sending email: {str(e)}")
+        print(f" Error sending email: {str(e)}")
 
     return redirect(url_for('dashboard'))
+
+@app.route('/update_profile', methods=['GET', 'POST'])
+@login_required
+def update_profile():
+    # Check if the form was submitted
+    if request.method == 'POST':
+        name = request.form['name']
+        email = request.form['email']
+        password = request.form['password']
+        confirm_password = request.form['confirm_password']
+
+        # Check if the new password matches the confirmation
+        if password != confirm_password:
+            flash('Passwords do not match.', 'danger')
+            return redirect(url_for('update_profile'))
+
+        # Get the current user
+        user = User.query.get(current_user.id)
+
+        # Check if the email is already taken by another user
+        if email != user.email and User.query.filter_by(email=email).first():
+            flash('Email is already taken by another user.', 'danger')
+            return redirect(url_for('update_profile'))
+
+        # Update the user's details
+        user.name = name
+        user.email = email
+
+        # If a new password is provided, update it
+        if password:
+            user.password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+
+        # Commit the changes to the database
+        db.session.commit()
+
+        flash('Profile updated successfully!', 'success')
+        return redirect(url_for('dashboard'))
+
+    return render_template('update_profile.html')
+
 
 
 

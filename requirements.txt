@@ -9,3 +9,4 @@ flask-login
 flask_sqlalchemy
 pytz
 fpdf
+flask_mail

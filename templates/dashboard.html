@@ -16,6 +16,7 @@
             <a class="navbar-brand">My Pulmonologist: Multi-Lungs Diseases Detection System</a>
             <div class="d-flex">
                 <a href="{{ url_for('predictnow') }}" class="btn btn-outline-success mx-2">Predict Now</a>
+                <a href="{{ url_for('update_profile') }}" class="btn btn-outline-primary mx-2">Update Profile</a>
                 <a href="{{ url_for('logout') }}" class="btn btn-outline-danger mx-2">Logout</a>
             </div>
         </div>
@@ -38,7 +39,7 @@
                             <!-- Buttons Container -->
                             <div class="d-flex flex-wrap justify-content-center gap-2 mt-3">
                                 <a href="{{ url_for('download_pdf', prediction_id=prediction.id) }}" class="btn btn-outline-primary btn-sm">Download PDF</a>
-                                <a href="{{ url_for('download_image', prediction_id=prediction.id) }}" class="btn btn-outline-secondary btn-sm">Download Image</a>
+                                <a href="{{ url_for('download_image', prediction_id=prediction.id) }}" class="btn btn-outline-primary btn-sm">Download Image</a>
                                 <a href="https://api.whatsapp.com/send?text=My%20Lung%20Disease%20Prediction:%20{{ prediction.result }}%20(Date:%20{{ prediction.timestamp.strftime('%Y-%m-%d') }})"
                                    target="_blank" class="btn btn-outline-success">Share on WhatsApp</a>
                             </div>
