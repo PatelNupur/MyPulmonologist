@@ -54,7 +54,7 @@ app.config['MAIL_USERNAME'] = 'my.pulmonologist.prediction@gmail.com'  # Replace
 app.config['MAIL_PASSWORD'] = 'bloc cnfq lqzo lyoh'  # Use App Password, not your actual password
 app.config['MAIL_DEFAULT_SENDER'] = 'my.pulmonologist.prediction@gmail.com'
 
-mail = Mail(app)  # Initialize Flask-Mail
+# mail = Mail(app)  # Initialize Flask-Mail
 
 
 # Model saved with Keras model.save()
