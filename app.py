@@ -30,13 +30,14 @@ from datetime import datetime
 import pytz
 from fpdf import FPDF
 from flask import send_file
-from flask_mail import Mail, Message
+
 
 #from gevent.pywsgi import WSGIServer
 
 # Define a flask app
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'  # Redirects unauthorized users to login page
