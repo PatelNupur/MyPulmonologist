@@ -31,23 +31,16 @@ import pytz
 from fpdf import FPDF
 from flask import send_file
 from flask_mail import Mail, Message
-from yourapp import db
-from yourapp.models import Feedback
 
 #from gevent.pywsgi import WSGIServer
 
 # Define a flask app
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
-#feedback system
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///feedback.db'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'  # Redirects unauthorized users to login page
 app.secret_key = 'secret_key'  # Required for session security(flash msgs)
-
-
 
 
 # Configure Flask-Mail
@@ -74,7 +67,7 @@ class User(db.Model, UserMixin):
     email = db.Column(db.String(100), unique=True) # Email should be unique
     password = db.Column(db.String(100))
     predictions = db.relationship('Prediction', backref='user', lazy=True)
-    feedbacks = db.relationship('Feedback', back_populates='user')  # Link to feedbacks
+    feedbacks = db.relationship('Feedback', backref='user',lazy = True)  # Link to feedbacks
 
     def __init__(self,email,password,name):
         self.name = name
@@ -97,12 +90,11 @@ class Feedback(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)  # Assuming you have a User model
     feedback_text = db.Column(db.Text, nullable=False)
-    created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
 
-    user = db.relationship('User', back_populates='feedbacks')  # If you want to link it to User
-
+    
 with app.app_context():
-    db.create_all() # Creates all the tables defined in models.py
+    db.create_all() # Creates all the tables
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -144,10 +136,8 @@ def login():
             login_user(user)  # Flask-Login handles session
             flash('Login successful!', 'success')
             return redirect(url_for('dashboard'))
-        
-        flash('Invalid email or password.', 'danger')
-        return redirect(url_for('login'))
-            
+        else:
+            flash('Invalid email or password.', 'danger')    
 
     return render_template('login.html')
 
@@ -167,19 +157,16 @@ def dashboard():
         if prediction.timestamp:  # Ensure timestamp exists
             prediction.timestamp = prediction.timestamp.replace(tzinfo=pytz.utc).astimezone(eastern_tz)    
     
-
+    
     return render_template('dashboard.html', user=current_user, predictions=predictions)
     
     # return redirect('/login')
 
-@app.route('/logout')
-@login_required
+@app.route('/logout', methods=['GET'])
 def logout():
     logout_user()
     flash('You have been logged out.', 'info')
-    return redirect('/login')
-
-
+    return render_template('index.html')
 
 
 def model_predict(img_path, model):
@@ -192,8 +179,7 @@ def model_predict(img_path, model):
     x=x/255
     x = np.expand_dims(x, axis=0)
    
-
-   
+  
 
     preds = model.predict(x)
     preds=np.argmax(preds, axis=1)
@@ -220,7 +206,6 @@ def index():
     return render_template('index.html')
 
 @app.route('/predictnow', methods=['GET'])
- # Ensure that the user is logged in to access the predictnow page
 def predictnow():
     # Main page
     return render_template('predict.html')
@@ -350,11 +335,34 @@ def send_email():
     timestamp = prediction.timestamp.strftime('%Y-%m-%d %H:%M')
 
     subject = "Your Lung Disease Prediction Report"
-    body = f"Hello,\n\nHere is your lung disease prediction result.\n\nPrediction: {prediction.result}\nDate: {timestamp}\n\nPlease find the attached report and image."
+    body = f"Hello,\n\nHere is your Lung disease prediction result.\n\nPrediction: {prediction.result}\nDate: {timestamp}\n\nPlease find the attached report and image."
 
     msg = Message(subject, recipients=[recipient], body=body)
 
     # Attach PDF report
+    pdf = FPDF()
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Arial", size=16)
+ 
+    # Add title
+    pdf.cell(200, 10, "Lung Disease Prediction Report", ln=True, align='C')
+    pdf.ln(10)
+ 
+    # Add prediction details
+    pdf.set_font("Arial", size=12)
+    pdf.cell(200, 10, f"Prediction: {prediction.result}", ln=True)
+    pdf.cell(200, 10, f"Date: {prediction.timestamp.strftime('%Y-%m-%d %H:%M')}", ln=True)
+    pdf.ln(10)
+ 
+    # Add image
+    image_path = prediction.image_path  # Ensure correct path
+    if os.path.exists(image_path):
+        pdf.image(image_path, x=10, y=pdf.get_y(), w=100)  # Adjust position and size
+        pdf.ln(60)  # Space after image
+ 
+ 
+    # Save PDF
     pdf_path = f"static/reports/prediction_{prediction.id}.pdf"
     if os.path.exists(pdf_path):
         with open(pdf_path, 'rb') as pdf:
