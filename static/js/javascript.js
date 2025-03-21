@@ -251,36 +251,7 @@ $('#btn-predict').click(function () {
           $('#result').fadeIn(600);
           $('#result').text(' Result:  ' + data);
           console.log('Success!');
-//       },
-//   });
-// });
-
-
-// // Show the feedback button after receiving a result
-// $('#btn-predict').click(function () {
-//     var form_data = new FormData($('#upload-file')[0]);
-
-//     // Show loading animation
-//     $(this).hide();
-//     $('.loader').show();
-
-//     // Make prediction by calling API /predict
-//     $.ajax({
-//         type: 'POST',
-//         url: '/predict',
-//         data: form_data,
-//         contentType: false,
-//         cache: false,
-//         processData: false,
-//         async: true,
-//         success: function (data) {
-//             $('.loader').hide();
-//             $('#result').fadeIn(600);
-//             $('#result').text('Result: ' + data);
-//             console.log('Success!');
-
-            // Show the feedback button
-            $('#feedback-btn').show();
+          // $('#feedback-btn').show();
         },
     });
 });
@@ -309,10 +280,14 @@ $('#submit-feedback').click(function () {
 
 
 $(document).ready(function() {
-  // Assuming the result is ready and you want to show the feedback button
-  $('#btn-predict').on('click', function() {
-      // Show the feedback button after prediction is done
-      $('#feedback-btn').show();
+  // Check if the user is logged in
+  $.get('/is_logged_in', function(response) {
+      if (response.logged_in) {
+          // Show the feedback button only if the user is logged in
+          $('#feedback-btn').show();
+      } else {
+          $('#feedback-btn').hide();
+      }
   });
 
   // When "Give Feedback" button is clicked, show the feedback form and overlay

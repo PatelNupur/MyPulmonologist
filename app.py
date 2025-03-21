@@ -30,6 +30,8 @@ from datetime import datetime
 import pytz
 from fpdf import FPDF
 from flask import send_file
+from flask_mail import Mail, Message
+
 
 
 #from gevent.pywsgi import WSGIServer
@@ -54,7 +56,7 @@ app.config['MAIL_USERNAME'] = 'my.pulmonologist.prediction@gmail.com'  # Replace
 app.config['MAIL_PASSWORD'] = 'bloc cnfq lqzo lyoh'  # Use App Password, not your actual password
 app.config['MAIL_DEFAULT_SENDER'] = 'my.pulmonologist.prediction@gmail.com'
 
-# mail = Mail(app)  # Initialize Flask-Mail
+mail = Mail(app)  # Initialize Flask-Mail
 
 
 # Model saved with Keras model.save()
@@ -325,7 +327,6 @@ def download_pdf(prediction_id):
 def send_email():
     recipient = request.form['email']
     prediction_id = request.form['prediction_id']
-
     prediction = Prediction.query.get_or_404(prediction_id)
 
     # Convert timestamp to Eastern Time (Ohio)
@@ -339,33 +340,15 @@ def send_email():
     subject = "Your Lung Disease Prediction Report"
     body = f"Hello,\n\nHere is your Lung disease prediction result.\n\nPrediction: {prediction.result}\nDate: {timestamp}\n\nPlease find the attached report and image."
 
-    msg = Message(subject, recipients=[recipient], body=body)
-
+    msg = Message(subject, sender=app.config['MAIL_DEFAULT_SENDER'], recipients=[recipient])
+    msg.body = body
     # Attach PDF report
-    pdf = FPDF()
-    pdf = FPDF()
-    pdf.add_page()
-    pdf.set_font("Arial", size=16)
- 
-    # Add title
-    pdf.cell(200, 10, "Lung Disease Prediction Report", ln=True, align='C')
-    pdf.ln(10)
- 
-    # Add prediction details
-    pdf.set_font("Arial", size=12)
-    pdf.cell(200, 10, f"Prediction: {prediction.result}", ln=True)
-    pdf.cell(200, 10, f"Date: {prediction.timestamp.strftime('%Y-%m-%d %H:%M')}", ln=True)
-    pdf.ln(10)
- 
-    # Add image
-    image_path = prediction.image_path  # Ensure correct path
-    if os.path.exists(image_path):
-        pdf.image(image_path, x=10, y=pdf.get_y(), w=100)  # Adjust position and size
-        pdf.ln(60)  # Space after image
- 
- 
-    # Save PDF
+
+    # Ensure the latest PDF is created
     pdf_path = f"static/reports/prediction_{prediction.id}.pdf"
+    download_pdf(prediction_id)  # Call the function to regenerate the PDF
+
+    # Attach the regenerated PDF
     if os.path.exists(pdf_path):
         with open(pdf_path, 'rb') as pdf:
             msg.attach(f"prediction_{prediction.id}.pdf", "application/pdf", pdf.read())
@@ -378,13 +361,12 @@ def send_email():
 
     try:
         mail.send(msg)
-        # flash('Email sent successfully!', 'success')
-        print(f" Email sent successfully to {recipient}")
+        print(f"Email sent successfully to {recipient}")
     except Exception as e:
-        # flash(f'Error sending email: {str(e)}', 'danger')
-        print(f" Error sending email: {str(e)}")
+        print(f"Error sending email: {str(e)}")
 
     return redirect(url_for('dashboard'))
+
 
 @app.route('/update_profile', methods=['GET', 'POST'])
 @login_required
@@ -424,6 +406,14 @@ def update_profile():
         return redirect(url_for('dashboard'))
 
     return render_template('update_profile.html')
+
+from flask_login import current_user
+
+@app.route('/is_logged_in', methods=['GET'])
+def is_logged_in():
+    return {'logged_in': current_user.is_authenticated}
+
+
 
 @app.route('/submit_feedback', methods=['POST'])
 @login_required
