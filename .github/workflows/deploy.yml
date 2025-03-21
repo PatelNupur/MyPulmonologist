@@ -21,7 +21,9 @@ jobs:
         key: ${{ secrets.EC2_SSH_KEY }}
         script: |
           cd /home/ubuntu/MyPulmonologist
+          git stash
           git pull origin main
+          git stash pop
           source venv/bin/activate
           pip install -r requirements.txt
           sudo systemctl restart flaskapp
