@@ -7,7 +7,7 @@
   <h3 align="center">My Pulmonologist</h3>
 
   <p align="center">
-    Providing Fast , Accurate Lungs Diseases Detection System with Deep Neural Networ
+    Providing Fast , Accurate Lungs Diseases Detection System with Deep Neural Network
     <br/>
     <br/>
     <a href="https://github.com/PatelNupur/MyPulmonologist"><strong>Explore the docs »</strong></a>
