@@ -34,7 +34,7 @@
 
 ## About The Project
 
-![Screen Shot](logo.jpg)
+![Screen Shot](logo.png)
 
 This project is about the classification of different lung diseases like COVID, Pneumonia, Tuberculosis, and Lung Cancer using chest-Xrays and CT scan images.
 
