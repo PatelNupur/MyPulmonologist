@@ -13,15 +13,13 @@
     <a href="https://github.com/PatelNupur/MyPulmonologist"><strong>Explore the docs »</strong></a>
     <br/>
     <br/>
-    <a href="http://mypulmonologist.herokuapp.com">View Demo</a>
-    .
+       .
     <a href="https://github.com/PatelNupur/MyPulmonologist">Report Bug</a>
     .
     <a href="https://github.com/PatelNupur/MyPulmonologist">Request Feature</a>
   </p>
 </p>
 
-![Contributors](https://img.shields.io/github/contributors/ghadiyaaysh17601/MyPulmonologist?color=dark-green) ![Forks](https://img.shields.io/github/forks/ghadiyaaysh17601/MyPulmonologist?style=social) ![Issues](https://img.shields.io/github/issues/ghadiyaaysh17601/MyPulmonologist) 
 
 ## Table Of Contents
 
@@ -54,15 +52,15 @@ To build this project I followed the below approach.
 
 Step 1:
 
-Data Preprocessing: In data preprocessing I had used different image processing techniques like noise removing, contrast adjusting using CLAHE, etc to enhance the image quality
+Data Preprocessing: In data preprocessing I had used different image processing techniques like noise removing, contrast adjusting using CLAHE, etc to enhance the image quality.
 
 Step 2:
 
-Training: To train I had used different transfer learning models like resnet52,vgg19,vgg16,inception,exception,mobilenet,inceptionresnet, etc. I had done fine-tuning on different models to increase the accuracy. After I had done the ensembling of different model as every models have their own methods to extract the feature from images
+Training: To train I had used different transfer learning models like resnet52,vgg19,vgg16,inception,exception,mobilenet,inceptionresnet, etc. I had done fine-tuning on different models to increase the accuracy. After I had done the ensembling of different model as every models have their own methods to extract the feature from images.
 
 Step 3:
 
-Deployment: For deployment, I had used flask and Heroku
+Deployment: For deployment, I had used flask and AWS
 
 ## Getting Started
 
